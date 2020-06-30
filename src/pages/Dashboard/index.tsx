@@ -1,82 +1,70 @@
-import React from 'react';
+/* eslint-disable camelcase */
+import React, { useState, FormEvent } from 'react';
 import { FiChevronRight } from 'react-icons/fi';
 
 import { Title, Form, Repositories } from './styles';
 import logoImg from '../../assets/logo.svg';
+import api from '../../services/api';
 
-const Dashboard: React.FC = () => (
-  <>
-    <img src={logoImg} alt="Githun Explorer" />
-    <Title>Explore Repositórios no Github</Title>
+interface Repository {
+  full_name: string;
+  description: string;
+  owner: {
+    login: string;
+    avatar_url: string;
+  }
+}
 
-    <Form>
-      <input placeholder="Digite o nome do repositório" />
-      <button type="submit">Pesquisar</button>
-    </Form>
+const Dashboard: React.FC = () => {
+  const [repositories, setRespositories] = useState<Repository[]>([]);
+  const [newRepo, setNewRepo] = useState('');
 
-    <Repositories>
-      <a href="teste">
-        <img
-          src="https://avatars0.githubusercontent.com/u/43701494?s=460&u=6f9699f3b36c089cd98bc13bdf51d76223192c29&v=4"
-          alt="Wallace Git"
+  async function handleAddRepository(event: FormEvent<HTMLFormElement>): Promise<void> {
+    event.preventDefault();
+
+    const response = await api.get(`repos/${newRepo}`);
+
+    const repository = response.data;
+
+    setRespositories([...repositories, repository]);
+    setNewRepo('');
+  }
+
+  return (
+    <>
+      <img src={logoImg} alt="Githun Explorer" />
+      <Title>Explore Repositórios no Github</Title>
+
+      <Form onSubmit={handleAddRepository}>
+        <input
+          placeholder="Digite o nome do repositório"
+          value={newRepo}
+          onChange={(e) => setNewRepo(e.target.value)}
         />
-        <div>
-          <strong>wallace/applesaopressao</strong>
-          <p>
-            Aplicação web/mobile, desenvolvida com React, para prevenção
-            e rastreamento da lesão por pressão (LPP). (WIP)
-          </p>
-        </div>
+        <button type="submit">Pesquisar</button>
+      </Form>
+      <Repositories>
+        {repositories.map((repository) => (
+          <a key={repository.full_name} href="teste">
+            <img
+              src={repository.owner.avatar_url}
+              alt={repository.owner.login}
+            />
+            <div>
+              <strong>{repository.full_name}</strong>
+              <p>
+                {repository.description}
+              </p>
+            </div>
 
-        <FiChevronRight size={50} />
-      </a>
-      <a href="teste">
-        <img
-          src="https://avatars0.githubusercontent.com/u/43701494?s=460&u=6f9699f3b36c089cd98bc13bdf51d76223192c29&v=4"
-          alt="Wallace Git"
-        />
-        <div>
-          <strong>wallace/applesaopressao</strong>
-          <p>
-            Aplicação web/mobile, desenvolvida com React, para prevenção
-            e rastreamento da lesão por pressão (LPP). (WIP)
-          </p>
-        </div>
+            <FiChevronRight size={50} />
+          </a>
+        ))}
+      </Repositories>
 
-        <FiChevronRight size={50} />
-      </a>
-      <a href="teste">
-        <img
-          src="https://avatars0.githubusercontent.com/u/43701494?s=460&u=6f9699f3b36c089cd98bc13bdf51d76223192c29&v=4"
-          alt="Wallace Git"
-        />
-        <div>
-          <strong>wallace/applesaopressao</strong>
-          <p>
-            Aplicação web/mobile, desenvolvida com React, para prevenção
-            e rastreamento da lesão por pressão (LPP). (WIP)
-          </p>
-        </div>
-
-        <FiChevronRight size={50} />
-      </a>
-      <a href="teste">
-        <img
-          src="https://avatars0.githubusercontent.com/u/43701494?s=460&u=6f9699f3b36c089cd98bc13bdf51d76223192c29&v=4"
-          alt="Wallace Git"
-        />
-        <div>
-          <strong>wallace/applesaopressao</strong>
-          <p>
-            Aplicação web/mobile, desenvolvida com React, para prevenção
-            e rastreamento da lesão por pressão (LPP). (WIP)
-          </p>
-        </div>
-
-        <FiChevronRight size={50} />
-      </a>
-    </Repositories>
-  </>
-);
+      <Repositories />
+    </>
+  );
+};
 
 export default Dashboard;
